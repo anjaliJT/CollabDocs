@@ -1,0 +1,27 @@
+Project Overview : 
+
+A simplified Notion or Google Docks 
+
+Working : 
+1) User Can create Workspacce.
+2) Invite Collaborators
+3) Write & Versions the documents
+4) Control Access - RBAC
+
+Models :
+1) USER 
+id , first name, last_name, email, phone, created_at
+
+2)WORKSPACE 
+id, name, owner, is_active , created_at
+
+3) WORKSPACE MEMBER 
+id, workspace, user, role, joined_at
+
+ADD UNIQUE CONSTRAINT :   the member of workspace should be unique. 
+
+4) documents
+id, title, content, workspace, create_by, status, updated-at 
+
+Every save must create document version 
+
