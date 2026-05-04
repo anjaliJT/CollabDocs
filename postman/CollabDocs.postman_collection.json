@@ -1,0 +1,632 @@
+{
+  "info": {
+    "_postman_id": "4f0f6e41-0d45-4a64-9f9a-8f3d1c1a7b91",
+    "name": "CollabDocs API",
+    "description": "Ready-to-import Postman collection for the CollabDocs Django REST API. Run requests in folder order to auto-populate collection variables like user, workspace, document, tag, and comment IDs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000/api"
+    },
+    {
+      "key": "ownerUserId",
+      "value": ""
+    },
+    {
+      "key": "memberUserId",
+      "value": ""
+    },
+    {
+      "key": "workspaceId",
+      "value": ""
+    },
+    {
+      "key": "documentId",
+      "value": ""
+    },
+    {
+      "key": "tagId",
+      "value": ""
+    },
+    {
+      "key": "commentId",
+      "value": ""
+    },
+    {
+      "key": "dateFrom",
+      "value": "2026-05-01T00:00:00Z"
+    },
+    {
+      "key": "dateTo",
+      "value": "2026-05-10T23:59:59Z"
+    }
+  ],
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create Owner User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "var data = pm.response.json();",
+                  "if (data.id) { pm.collectionVariables.set('ownerUserId', data.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Owner\",\n  \"last_name\": \"One\",\n  \"email\": \"owner.postman@example.com\",\n  \"phone\": \"9000011111\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                ""
+              ]
+            },
+            "description": "Create the workspace owner user. The returned id is stored in collection variable ownerUserId."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{ownerUserId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{ownerUserId}}",
+                ""
+              ]
+            },
+            "description": "Fetch a user by UUID using the ownerUserId variable captured from the create request."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Member User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "var data = pm.response.json();",
+                  "if (data.id) { pm.collectionVariables.set('memberUserId', data.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Editor\",\n  \"last_name\": \"Two\",\n  \"email\": \"editor.postman@example.com\",\n  \"phone\": \"9111122222\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                ""
+              ]
+            },
+            "description": "Create a second user to add as a workspace member. The returned id is stored in memberUserId."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Workspaces",
+      "item": [
+        {
+          "name": "Create Workspace",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "var data = pm.response.json();",
+                  "if (data.id) { pm.collectionVariables.set('workspaceId', data.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Workspace\",\n  \"owner\": \"{{ownerUserId}}\",\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/workspaces/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workspaces",
+                ""
+              ]
+            },
+            "description": "Create a workspace. Your model logic also adds the owner as an admin workspace member."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Workspace By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/workspaces/{{workspaceId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workspaces",
+                "{{workspaceId}}",
+                ""
+              ]
+            },
+            "description": "Fetch a single workspace by UUID."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Workspace Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": \"{{memberUserId}}\",\n  \"role\": \"editor\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/workspaces/{{workspaceId}}/members/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workspaces",
+                "{{workspaceId}}",
+                "members",
+                ""
+              ]
+            },
+            "description": "Add a user to the workspace with one of: admin, editor, viewer."
+          },
+          "response": []
+        },
+        {
+          "name": "List Workspace Members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/workspaces/{{workspaceId}}/members/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workspaces",
+                "{{workspaceId}}",
+                "members",
+                ""
+              ]
+            },
+            "description": "List all members of a workspace, including the owner auto-added as admin."
+          },
+          "response": []
+        },
+        {
+          "name": "Workspace Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/workspaces/{{workspaceId}}/summary/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workspaces",
+                "{{workspaceId}}",
+                "summary",
+                ""
+              ]
+            },
+            "description": "Get document count, member count, and comment count for a workspace."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Documents",
+      "item": [
+        {
+          "name": "Create Document",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "var data = pm.response.json();",
+                  "if (data.id) { pm.collectionVariables.set('documentId', data.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman Document\",\n  \"content\": \"Initial content from Postman\",\n  \"workspace\": \"{{workspaceId}}\",\n  \"created_by\": \"{{ownerUserId}}\",\n  \"status\": \"draft\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/documents/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documents",
+                ""
+              ]
+            },
+            "description": "Create a document. This also creates the first DocumentVersion and an AuditLog entry in the same transaction."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Document",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman Document\",\n  \"content\": \"Updated content from Postman\",\n  \"workspace\": \"{{workspaceId}}\",\n  \"created_by\": \"{{ownerUserId}}\",\n  \"updated_by\": \"{{memberUserId}}\",\n  \"status\": \"published\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/documents/{{documentId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documents",
+                "{{documentId}}",
+                ""
+              ]
+            },
+            "description": "Update a document and create a new DocumentVersion plus AuditLog row."
+          },
+          "response": []
+        },
+        {
+          "name": "List Documents With Filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/documents/?workspace={{workspaceId}}&status=published&tag_name=backend-postman&search=Postman",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documents",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "workspace",
+                  "value": "{{workspaceId}}"
+                },
+                {
+                  "key": "status",
+                  "value": "published"
+                },
+                {
+                  "key": "tag_name",
+                  "value": "backend-postman"
+                },
+                {
+                  "key": "search",
+                  "value": "Postman"
+                }
+              ]
+            },
+            "description": "Filter documents by workspace, status, tag_name, and title search text."
+          },
+          "response": []
+        },
+        {
+          "name": "Document Versions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/documents/{{documentId}}/versions/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documents",
+                "{{documentId}}",
+                "versions",
+                ""
+              ]
+            },
+            "description": "List all saved versions of a document in reverse version order."
+          },
+          "response": []
+        },
+        {
+          "name": "Document Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/documents/{{documentId}}/stats/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documents",
+                "{{documentId}}",
+                "stats",
+                ""
+              ]
+            },
+            "description": "Get version count, comment count, and contributor count for the document."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Tags To Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tag_ids\": [\"{{tagId}}\"],\n  \"tag_names\": [\"backend-postman\", \"api-demo\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/documents/{{documentId}}/tags/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documents",
+                "{{documentId}}",
+                "tags",
+                ""
+              ]
+            },
+            "description": "Attach existing tags by id and/or create-and-attach tags by name."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Create Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "var data = pm.response.json();",
+                  "if (data.id) { pm.collectionVariables.set('commentId', data.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document\": \"{{documentId}}\",\n  \"author\": \"{{ownerUserId}}\",\n  \"content\": \"Top-level comment from Postman\",\n  \"parent\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comments/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comments",
+                ""
+              ]
+            },
+            "description": "Create a top-level comment. To create a reply, resend this request with parent set to {{commentId}} and author set to {{memberUserId}}."
+          },
+          "response": []
+        },
+        {
+          "name": "List Comments For Document",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/comments/?document={{documentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comments",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "document",
+                  "value": "{{documentId}}"
+                }
+              ]
+            },
+            "description": "List comments for a document."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "Create Tag",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "var data = pm.response.json();",
+                  "if (data.id) { pm.collectionVariables.set('tagId', data.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"backend-postman\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tags/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tags",
+                ""
+              ]
+            },
+            "description": "Create a tag. The returned id is stored in tagId."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Audit Logs",
+      "item": [
+        {
+          "name": "List Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/audit-logs/?actor_id={{ownerUserId}}&date_from={{dateFrom}}&date_to={{dateTo}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "audit-logs",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "actor_id",
+                  "value": "{{ownerUserId}}"
+                },
+                {
+                  "key": "date_from",
+                  "value": "{{dateFrom}}"
+                },
+                {
+                  "key": "date_to",
+                  "value": "{{dateTo}}"
+                }
+              ]
+            },
+            "description": "Filter audit logs by actor_id and optional ISO datetime range."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
