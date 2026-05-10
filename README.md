@@ -37,3 +37,7 @@ python manage.py runserver 0.0.0.0:8000
 
 - The app reads database settings from `.env`.
 - If you change the database credentials, update `.env` before running migrations or the server.
+
+## Demo Video
+
+- Yogesh Jain: https://drive.google.com/file/d/13DcGqpcBfILdkHcfTaw9md6k3mfkEGi8/view?usp=sharing
