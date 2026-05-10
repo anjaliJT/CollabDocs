@@ -1,9 +1,21 @@
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 
 from .models import AuditLog, Comment, Document, DocumentVersion, Tag, User, Workspace, WorkspaceMember
 
 
 class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
+    phone = serializers.CharField(
+        max_length=15,
+        validators=[
+            RegexValidator(
+                regex=r'^\+?\d{10,15}$',
+                message='Phone number must contain 10 to 15 digits and may start with +.',
+            )
+        ],
+    )
+
     class Meta:
         model = User
         fields = ['id', 'first_name', 'last_name', 'email', 'phone', 'created_at']
@@ -11,10 +23,15 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class WorkspaceSerializer(serializers.ModelSerializer):
+    member_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Workspace
-        fields = ['id', 'name', 'owner', 'is_active', 'created_at']
+        fields = ['id', 'name', 'owner', 'is_active', 'created_at', 'member_count']
         read_only_fields = ['id', 'created_at']
+
+    def get_member_count(self, obj):
+        return getattr(obj, 'member_count', obj.members.count())
 
 
 class WorkspaceMemberSerializer(serializers.ModelSerializer):
@@ -32,10 +49,15 @@ class AddMemberSerializer(serializers.Serializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
+    document_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Tag
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'document_count']
         read_only_fields = ['id']
+
+    def get_document_count(self, obj):
+        return getattr(obj, 'document_count', obj.documents.count())
 
 
 class DocumentSerializer(serializers.ModelSerializer):

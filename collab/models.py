@@ -25,12 +25,13 @@ class Workspace(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        WorkspaceMember.objects.update_or_create(
-            workspace=self,
-            user=self.owner,
-            defaults={"role": WorkspaceMember.Role.ADMIN},
-        )
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            WorkspaceMember.objects.update_or_create(
+                workspace=self,
+                user=self.owner,
+                defaults={"role": WorkspaceMember.Role.ADMIN},
+            )
     
 class WorkspaceMember(models.Model):
     class Role(models.TextChoices):
@@ -69,7 +70,6 @@ class Document(models.Model):
     def save(self, *args, **kwargs):
         actor = kwargs.pop('actor', None)
         with transaction.atomic():
-            is_create = self._state.adding
             super().save(*args, **kwargs)
 
             # Keep per-document version numbering sequential.
@@ -81,12 +81,6 @@ class Document(models.Model):
                 content=self.content,
                 version_number=version_number,
                 saved_by=version_actor,
-            )
-            AuditLog.objects.create(
-                actor=version_actor,
-                action='created' if is_create else 'updated',
-                model_name=self.__class__.__name__,
-                object_id=str(self.id),
             )
 
 

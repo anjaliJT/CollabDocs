@@ -48,6 +48,25 @@
       "name": "Users",
       "item": [
         {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                ""
+              ]
+            },
+            "description": "List all users in the system."
+          },
+          "response": []
+        },
+        {
           "name": "Create Owner User",
           "event": [
             {
@@ -154,6 +173,25 @@
     {
       "name": "Workspaces",
       "item": [
+        {
+          "name": "List Workspaces",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/workspaces/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workspaces",
+                ""
+              ]
+            },
+            "description": "List all workspaces."
+          },
+          "response": []
+        },
         {
           "name": "Create Workspace",
           "event": [
@@ -293,6 +331,25 @@
       "name": "Documents",
       "item": [
         {
+          "name": "List Documents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/documents/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documents",
+                ""
+              ]
+            },
+            "description": "List documents with no filters applied."
+          },
+          "response": []
+        },
+        {
           "name": "Create Document",
           "event": [
             {
@@ -330,6 +387,26 @@
               ]
             },
             "description": "Create a document. This also creates the first DocumentVersion and an AuditLog entry in the same transaction."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Document By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/documents/{{documentId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "documents",
+                "{{documentId}}",
+                ""
+              ]
+            },
+            "description": "Fetch a single document by UUID."
           },
           "response": []
         },
@@ -477,6 +554,34 @@
       "name": "Comments",
       "item": [
         {
+          "name": "Create Reply Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document\": \"{{documentId}}\",\n  \"author\": \"{{memberUserId}}\",\n  \"content\": \"Reply comment from Postman\",\n  \"parent\": \"{{commentId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comments/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comments",
+                ""
+              ]
+            },
+            "description": "Create a threaded reply comment by setting parent to an existing comment UUID."
+          },
+          "response": []
+        },
+        {
           "name": "Create Comment",
           "event": [
             {
@@ -547,6 +652,25 @@
     {
       "name": "Tags",
       "item": [
+        {
+          "name": "List Tags",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tags/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tags",
+                ""
+              ]
+            },
+            "description": "List all tags."
+          },
+          "response": []
+        },
         {
           "name": "Create Tag",
           "event": [

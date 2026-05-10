@@ -1,4 +1,6 @@
-from django.db.models import Count
+from django.db import IntegrityError
+from django.db import transaction
+from django.db.models import Count, Q
 from django.utils.dateparse import parse_datetime
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -22,43 +24,61 @@ from .serializers import (
 class UserViewSet(viewsets.ModelViewSet):
 	queryset = User.objects.all().order_by('-created_at')
 	serializer_class = UserSerializer
+	lookup_field = 'id'
 	http_method_names = ['get', 'post']
 
 
 class WorkspaceViewSet(viewsets.ModelViewSet):
-	queryset = Workspace.objects.select_related('owner').all().order_by('-created_at')
 	serializer_class = WorkspaceSerializer
 	http_method_names = ['get', 'post']
 
+	def get_queryset(self):
+		return Workspace.objects.select_related('owner').annotate(
+			member_count=Count('members', distinct=True),
+		).order_by('-created_at')
+
 	@action(detail=True, methods=['post'], url_path='members')
 	def add_member(self, request, pk=None):
-		workspace = self.get_object()
+		try:
+			workspace = Workspace.objects.get(id=pk)
+		except Workspace.DoesNotExist:
+			return Response({'detail': 'Workspace not found.'}, status=status.HTTP_404_NOT_FOUND)
+
 		serializer = AddMemberSerializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
 
-		member, created = WorkspaceMember.objects.get_or_create(
-			workspace=workspace,
-			user=serializer.validated_data['user'],
-			defaults={'role': serializer.validated_data['role']},
-		)
-		if not created:
-			member.role = serializer.validated_data['role']
-			member.save(update_fields=['role'])
+		try:
+			with transaction.atomic():
+				member = WorkspaceMember.objects.create(
+					workspace=workspace,
+					user=serializer.validated_data['user'],
+					role=serializer.validated_data['role'],
+				)
+		except IntegrityError:
+			return Response(
+				{'detail': 'This user is already a member of the workspace.'},
+				status=status.HTTP_409_CONFLICT,
+			)
 
 		response_serializer = WorkspaceMemberSerializer(member)
-		status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-		return Response(response_serializer.data, status=status_code)
+		return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 	@add_member.mapping.get
 	def list_members(self, request, pk=None):
-		workspace = self.get_object()
+		try:
+			workspace = Workspace.objects.get(id=pk)
+		except Workspace.DoesNotExist:
+			return Response({'detail': 'Workspace not found.'}, status=status.HTTP_404_NOT_FOUND)
 		members = workspace.members.select_related('user').all().order_by('-joined_at')
 		serializer = WorkspaceMemberSerializer(members, many=True)
 		return Response(serializer.data)
 
 	@action(detail=True, methods=['get'], url_path='summary')
 	def summary(self, request, pk=None):
-		workspace = self.get_object()
+		try:
+			workspace = Workspace.objects.get(id=pk)
+		except Workspace.DoesNotExist:
+			return Response({'detail': 'Workspace not found.'}, status=status.HTTP_404_NOT_FOUND)
 		summary_data = Workspace.objects.filter(id=workspace.id).annotate(
 			document_count=Count('documents', distinct=True),
 			member_count=Count('members', distinct=True),
@@ -86,7 +106,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
 		if tag_name:
 			queryset = queryset.filter(tags__name__iexact=tag_name)
 		if search_text:
-			queryset = queryset.filter(title__icontains=search_text)
+			queryset = queryset.filter(Q(title__icontains=search_text) | Q(content__icontains=search_text))
 
 		return queryset.distinct()
 
@@ -94,10 +114,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
 		serializer.save(actor=serializer.validated_data.get('created_by'))
 
 	def perform_update(self, serializer):
-		updated_by_id = self.request.data.get('updated_by')
-		actor = None
-		if updated_by_id:
-			actor = User.objects.filter(id=updated_by_id).first()
+		actor = serializer.validated_data.get('updated_by')
 		serializer.save(actor=actor)
 
 	@action(detail=True, methods=['get'], url_path='versions')
@@ -123,7 +140,8 @@ class DocumentViewSet(viewsets.ModelViewSet):
 		tag_ids = request.data.get('tag_ids', [])
 		tag_names = request.data.get('tag_names', [])
 
-		tags_to_add = list(Tag.objects.filter(id__in=tag_ids))
+		valid_tag_ids = list(Tag.objects.filter(id__in=tag_ids).values_list('id', flat=True))
+		tags_to_add = list(Tag.objects.filter(id__in=valid_tag_ids))
 		for tag_name in tag_names:
 			if tag_name:
 				tag_obj, _ = Tag.objects.get_or_create(name=tag_name)
@@ -158,9 +176,11 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class TagViewSet(viewsets.ModelViewSet):
-	queryset = Tag.objects.all().order_by('name')
 	serializer_class = TagSerializer
 	http_method_names = ['get', 'post']
+
+	def get_queryset(self):
+		return Tag.objects.annotate(document_count=Count('documents', distinct=True)).order_by('name')
 
 
 class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
